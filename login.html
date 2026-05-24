@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyFlow - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="assets/images/icon1.PNG">
+  <style>
+    /* ===== CSS VARIABLES (sama persis dengan home.css) ===== */
+    :root {
+      --bg: #eef3ff;
+      --bg-soft: #f7f9ff;
+      --surface: rgba(255, 255, 255, 0.9);
+      --surface-strong: #ffffff;
+      --surface-muted: #f3f6ff;
+      --text: #121827;
+      --text-soft: #65718b;
+      --text-faint: #98a2b8;
+      --line: rgba(116, 132, 170, 0.18);
+      --line-strong: rgba(116, 132, 170, 0.28);
+      --primary: #4f46e5;
+      --primary-2: #7c3aed;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --yellow: #d97706;
+      --red: #e11d48;
+      --purple: #7c3aed;
+      --shadow-card: 0 8px 22px rgba(31, 41, 75, 0.07);
+      --shadow-hover: 0 12px 28px rgba(59, 70, 130, 0.12);
+      --shadow-glow: 0 10px 24px rgba(79, 70, 229, 0.16);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --font: "Inter", "Segoe UI", system-ui, sans-serif;
+    }
+
+    body.mode-gelap {
+      --bg: #0b1020;
+      --bg-soft: #11182b;
+      --surface: #151d32;
+      --surface-strong: #18213a;
+      --surface-muted: #1e2945;
+      --text: #edf2ff;
+      --text-soft: #a9b4cc;
+      --text-faint: #68748d;
+      --line: rgba(187, 199, 232, 0.14);
+      --line-strong: rgba(187, 199, 232, 0.22);
+      --shadow-card: 0 8px 20px rgba(0, 0, 0, 0.22);
+      --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.28);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(124, 58, 237, 0.18), transparent 28rem),
+        radial-gradient(circle at 88% 12%, rgba(37, 99, 235, 0.16), transparent 30rem),
+        linear-gradient(135deg, var(--bg), var(--bg-soft));
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    /* Grid ambient background */
+    .latar-ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(79, 70, 229, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79, 70, 229, 0.035) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 78%);
+    }
+
+    /* ===== AUTH WRAPPER ===== */
+    .wadah-auth {
+      width: 100%;
+      max-width: 440px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== BRAND HEADER (above card) ===== */
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-ikon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      box-shadow: var(--shadow-glow);
+      flex-shrink: 0;
+    }
+
+    .brand-teks h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .brand-teks p {
+      font-size: 13px;
+      color: var(--text-soft);
+      font-weight: 500;
+    }
+
+    /* ===== AUTH CARD ===== */
+    .kartu-auth {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      box-shadow: var(--shadow-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .header-form {
+      margin-bottom: 28px;
+    }
+
+    .header-form .teks-kecil {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+      margin-bottom: 6px;
+    }
+
+    .header-form h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    /* ===== FORM ===== */
+    .form-auth {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .grup-form {
+      display: grid;
+      gap: 7px;
+    }
+
+    .grup-form label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-soft);
+      letter-spacing: 0.01em;
+    }
+
+    .grup-form input {
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface-muted);
+      color: var(--text);
+      font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      width: 100%;
+    }
+
+    .grup-form input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--surface-strong);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+
+    .grup-form input::placeholder {
+      color: var(--text-faint);
+    }
+
+    .grup-form input.input-error {
+      border-color: var(--red);
+      background: rgba(225, 29, 72, 0.04);
+    }
+
+    .pesan-error {
+      font-size: 12px;
+      color: var(--red);
+      font-weight: 600;
+      min-height: 16px;
+      display: none;
+    }
+
+    .pesan-error.tampil { display: block; }
+
+    /* ===== TOMBOL UTAMA ===== */
+    .tombol-auth {
+      width: 100%;
+      padding: 12px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      box-shadow: var(--shadow-glow);
+      letter-spacing: 0.01em;
+    }
+
+    .tombol-auth:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(79, 70, 229, 0.26);
+    }
+
+    .tombol-auth:active { transform: translateY(0); }
+
+    .tombol-auth.loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* ===== DIVIDER ===== */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 0;
+      color: var(--text-faint);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* ===== LINK BERALIH FORM ===== */
+    .link-auth {
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--text-soft);
+      font-weight: 500;
+    }
+
+    .link-auth a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+      transition: opacity 0.2s;
+    }
+
+    .link-auth a:hover { opacity: 0.75; text-decoration: underline; }
+
+    /* ===== TOAST NOTIFICATION ===== */
+    .wadah-toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .toast-item {
+      max-width: 320px;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      background: var(--surface-strong);
+      border-left: 4px solid;
+      box-shadow: var(--shadow-card);
+      font-size: 13.5px;
+      font-weight: 600;
+      animation: toastMasuk 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: all;
+    }
+
+    .toast-item.sukses { border-left-color: var(--green); color: var(--green); }
+    .toast-item.error  { border-left-color: var(--red);   color: var(--red); }
+
+    @keyframes toastMasuk {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+
+    /* ===== HIDDEN ===== */
+    .tersembunyi { display: none !important; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .kartu-auth { padding: 24px 20px; }
+      .brand-header { margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="latar-ambient" aria-hidden="true"></div>
+
+  <div class="wadah-auth">
+    <!-- Brand di atas card -->
+    <div class="brand-header">
+      <span class="brand-ikon">SF</span>
+      <div class="brand-teks">
+        <h1>StudyFlow</h1>
+        <p>Student workspace</p>
+      </div>
+    </div>
+
+    <!-- FORM LOGIN -->
+    <div id="formLoginContainer" class="kartu-auth">
+      <div class="header-form">
+        <p class="teks-kecil">Selamat datang kembali</p>
+        <h2>Masuk ke akun</h2>
+      </div>
+
+      <form id="formLogin" class="form-auth" onsubmit="return handleLoginSubmit(event)">
+        <div class="grup-form">
+          <label for="emailLogin">Email</label>
+          <input type="email" id="emailLogin" placeholder="nama@email.com" autocomplete="email">
+          <span class="pesan-error" id="errorEmailLogin"></span>
+        </div>
+
+        <div class="grup-form">
+          <label for="passwordLogin">Password</label>
+          <input type="password" id="passwordLogin" placeholder="Minimal 6 karakter" autocomplete="current-password">
+          <span class="pesan-error" id="errorPasswordLogin"></span>
+        </div>
+
+        <button type="submit" class="tombol-auth" id="tombolLogin">Masuk</button>
+      </form>
+
+      <div class="divider">atau</div>
+
+      <p class="link-auth">
+        Belum punya akun?
+        <a href="#" onclick="tampilkanFormRegister(); return false;">Daftar di sini</a>
+      </p>
+    </div>
+
+    <!-- FORM REGISTER -->
+    <div id="formRegisterContainer" class="kartu-auth tersembunyi">
+      <div class="header-form">
+        <p class="teks-kecil">Buat akun baru</p>
+        <h2>Daftar sekarang</h2>
+      </div>
+
+      <form id="formRegister" class="form-auth" onsubmit="return handleRegisterSubmit(event)">
+        <div class="grup-form">
+          <label for="namaRegister">Nama lengkap</label>
+          <input type="text" id="namaRegister" placeholder="Nama kamu" autocomplete="name">
+          <span class="pesan-error" id="errorNamaRegister"></span>
+        </div>
+
+        <div class="grup-form">
+          <label for="emailRegister">Email</label>
+          <input type="email" id="emailRegister" placeholder="nama@email.com" autocomplete="email">
+          <span class="pesan-error" id="errorEmailRegister"></span>
+        </div>
+
+        <div class="grup-form">
+          <label for="passwordRegister">Password</label>
+          <input type="password" id="passwordRegister" placeholder="Minimal 6 karakter" autocomplete="new-password">
+          <span class="pesan-error" id="errorPasswordRegister"></span>
+        </div>
+
+        <button type="submit" class="tombol-auth" id="tombolRegister">Buat Akun</button>
+      </form>
+
+      <div class="divider">atau</div>
+
+      <p class="link-auth">
+        Sudah punya akun?
+        <a href="#" onclick="tampilkanFormLogin(); return false;">Login di sini</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="wadahToast" class="wadah-toast" aria-live="polite"></div>
+
+  <script>
+    /* ====================================================
+       SCRIPT LOGIN & REGISTER — StudyFlow
+       ====================================================
+       Menangani:
+       1. Toggle antara form login & register
+       2. Validasi input di sisi client
+       3. Fetch POST ke backend PHP
+       4. Toast notification & redirect
+    ==================================================== */
+
+    // ── Tampilkan / sembunyikan form ──────────────────────
+    function tampilkanFormLogin() {
+      document.getElementById('formLoginContainer').classList.remove('tersembunyi');
+      document.getElementById('formRegisterContainer').classList.add('tersembunyi');
+      bersihkanFormLogin();
+    }
+
+    function tampilkanFormRegister() {
+      document.getElementById('formLoginContainer').classList.add('tersembunyi');
+      document.getElementById('formRegisterContainer').classList.remove('tersembunyi');
+      bersihkanFormRegister();
+    }
+
+    // ── Bersihkan error ───────────────────────────────────
+    function bersihkanFormLogin() {
+      ['emailLogin', 'passwordLogin'].forEach(id => {
+        document.getElementById(id).classList.remove('input-error');
+      });
+      ['errorEmailLogin', 'errorPasswordLogin'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.classList.remove('tampil');
+      });
+    }
+
+    function bersihkanFormRegister() {
+      ['namaRegister', 'emailRegister', 'passwordRegister'].forEach(id => {
+        document.getElementById(id).classList.remove('input-error');
+      });
+      ['errorNamaRegister', 'errorEmailRegister', 'errorPasswordRegister'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.classList.remove('tampil');
+      });
+    }
+
+    // ── Tampilkan error di input ──────────────────────────
+    function tampilkanError(inputId, errorId, pesan) {
+      const input = document.getElementById(inputId);
+      const err   = document.getElementById(errorId);
+      input.classList.add('input-error');
+      err.textContent = pesan;
+      err.classList.add('tampil');
+      input.focus();
+    }
+
+    // ── Toast notification ────────────────────────────────
+    function tampilkanToast(pesan, tipe = 'sukses') {
+      const wadah = document.getElementById('wadahToast');
+      const toast = document.createElement('div');
+      toast.className = `toast-item ${tipe}`;
+      toast.textContent = pesan;
+      wadah.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s, transform 0.3s';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // ── Handle LOGIN submit ───────────────────────────────
+    async function handleLoginSubmit(event) {
+      event.preventDefault();
+      bersihkanFormLogin();
+
+      const email    = document.getElementById('emailLogin').value.trim();
+      const password = document.getElementById('passwordLogin').value;
+      const tombol   = document.getElementById('tombolLogin');
+
+      if (!email) {
+        tampilkanError('emailLogin', 'errorEmailLogin', 'Email tidak boleh kosong');
+        return false;
+      }
+      if (!password) {
+        tampilkanError('passwordLogin', 'errorPasswordLogin', 'Password tidak boleh kosong');
+        return false;
+      }
+
+      tombol.classList.add('loading');
+      tombol.textContent = 'Memproses...';
+
+      try {
+        const response = await fetch('backend/login.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ email, password })
+        });
+
+        const responseText = await response.text();
+        let data;
+        try { data = JSON.parse(responseText); }
+        catch {
+          tampilkanToast('Format respon server tidak valid. Cek console.', 'error');
+          console.error('Raw respon:', responseText);
+          return false;
+        }
+
+        if (data.success) {
+          tampilkanToast('Login berhasil! Mengalihkan...', 'sukses');
+          setTimeout(() => { window.location.href = 'dashboard.php'; }, 900);
+        } else {
+          tampilkanError('emailLogin', 'errorEmailLogin', data.message || 'Login gagal');
+          tampilkanToast(data.message || 'Login gagal', 'error');
+        }
+      } catch (err) {
+        console.error('Network error:', err);
+        tampilkanError('emailLogin', 'errorEmailLogin', 'Kesalahan jaringan. Cek koneksi kamu.');
+        tampilkanToast('Gagal terhubung ke server.', 'error');
+      } finally {
+        tombol.classList.remove('loading');
+        tombol.textContent = 'Masuk';
+      }
+
+      return false;
+    }
+
+    // ── Handle REGISTER submit ────────────────────────────
+    async function handleRegisterSubmit(event) {
+      event.preventDefault();
+      bersihkanFormRegister();
+
+      const nama     = document.getElementById('namaRegister').value.trim();
+      const email    = document.getElementById('emailRegister').value.trim();
+      const password = document.getElementById('passwordRegister').value;
+      const tombol   = document.getElementById('tombolRegister');
+
+      let valid = true;
+
+      if (!nama) {
+        tampilkanError('namaRegister', 'errorNamaRegister', 'Nama tidak boleh kosong');
+        valid = false;
+      }
+      if (!email) {
+        tampilkanError('emailRegister', 'errorEmailRegister', 'Email tidak boleh kosong');
+        valid = false;
+      }
+      if (!password || password.length < 6) {
+        tampilkanError('passwordRegister', 'errorPasswordRegister', 'Password minimal 6 karakter');
+        valid = false;
+      }
+
+      if (!valid) return false;
+
+      tombol.classList.add('loading');
+      tombol.textContent = 'Memproses...';
+
+      try {
+        const response = await fetch('backend/register.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ nama, email, password })
+        });
+
+        const responseText = await response.text();
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          tampilkanToast('Format respon server tidak valid. Cek console.', 'error');
+          console.error('Raw respon:', responseText);
+          console.error('Parse error:', parseError);
+          return false;
+        }
+
+        if (data.success) {
+          tampilkanToast('Akun berhasil dibuat! Silakan login.', 'sukses');
+          setTimeout(() => {
+            tampilkanFormLogin();
+            document.getElementById('emailLogin').value = email;
+          }, 1200);
+        } else {
+          tampilkanError('emailRegister', 'errorEmailRegister', data.message || 'Registrasi gagal');
+          tampilkanToast(data.message || 'Registrasi gagal', 'error');
+        }
+      } catch (err) {
+        console.error('Network error:', err);
+        tampilkanError('emailRegister', 'errorEmailRegister', 'Kesalahan jaringan. Cek koneksi kamu.');
+        tampilkanToast('Gagal terhubung ke server.', 'error');
+      } finally {
+        tombol.classList.remove('loading');
+        tombol.textContent = 'Buat Akun';
+      }
+
+      return false;
+    }
+
+    // ── Init ──────────────────────────────────────────────
+    window.addEventListener('load', () => {
+      // Terapkan dark mode jika sebelumnya aktif
+      if (localStorage.getItem('studentTodoDarkMode') === 'true') {
+        document.body.classList.add('mode-gelap');
+      }
+      tampilkanFormLogin();
+    });
+  </script>
+</body>
+</html>
