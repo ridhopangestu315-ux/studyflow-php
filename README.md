@@ -1,19 +1,8 @@
-# StudyFlow PHP Native
+# StudyFlow - PHP Native + MySQL
 
-StudyFlow adalah aplikasi dashboard tugas mahasiswa berbasis PHP native + MySQL. UI utama tetap memakai desain, warna, layout, animasi, kalender, dan komponen yang sudah ada. Backend dirapikan agar cocok untuk shared hosting gratis seperti InfinityFree.
+Aplikasi manajemen tugas mahasiswa yang ringan, modern, responsive, dan siap upload ke InfinityFree. UI tetap mengikuti konsep desain referensi: clean dashboard, card modern, kalender interaktif, dark/light mode, toast, modal, dan empty state.
 
-## Fitur
-
-- Register, login, logout, session protection.
-- Password disimpan dengan `password_hash()`.
-- Data tugas, mata kuliah, dan jadwal dipisah per user.
-- CRUD tugas: tambah, edit, hapus, status selesai/belum, deadline, prioritas.
-- CRUD mata kuliah per akun.
-- Kalender interaktif: klik tanggal untuk melihat/tambah agenda.
-- Dashboard statistik tugas, deadline dekat, agenda hari ini.
-- Prepared statement di semua endpoint database.
-
-## Struktur Folder
+## Struktur Project
 
 ```text
 studyflow-php/
@@ -21,55 +10,66 @@ studyflow-php/
 ├── login.html
 ├── dashboard.php
 ├── .htaccess
-├── config/
-│   └── database.php
-├── includes/
-│   └── app.php
-├── backend/
+├── assets/
+│   ├── css/home.css
+│   ├── js/script.js
+│   └── images/
+├── auth/
 │   ├── login.php
 │   ├── register.php
 │   ├── logout.php
+│   ├── change_password.php
+│   └── profile.php
+├── backend/
 │   ├── ambil_todo.php
 │   ├── tambah_todo.php
 │   ├── update_todo.php
 │   ├── hapus_todo.php
 │   ├── ambil_mata_kuliah.php
 │   ├── tambah_mata_kuliah.php
+│   ├── update_mata_kuliah.php
 │   ├── hapus_mata_kuliah.php
 │   ├── ambil_jadwal.php
 │   ├── tambah_jadwal.php
 │   └── hapus_jadwal.php
-├── assets/
-│   ├── css/home.css
-│   ├── js/script.js
-│   └── images/icon1.PNG
-├── uploads/
-└── database/
-    └── studyflow.sql
+├── config/database.php
+├── includes/app.php
+├── database/studyflow.sql
+├── pages/
+└── uploads/
 ```
+
+## Database
+
+Nama database default: `todo_app`
+
+Tabel:
+- `users`
+- `subjects`
+- `tasks`
+- `schedules`
+- `notifications`
+
+Semua query utama menggunakan prepared statement dan setiap data dibatasi berdasarkan `user_id`.
 
 ## Install di InfinityFree
 
-1. Buat akun dan hosting di InfinityFree.
-2. Buka **File Manager** atau FTP.
-3. Upload semua file project ke folder `htdocs`.
-4. Buka **Control Panel > MySQL Databases**.
-5. Buat database baru. Catat:
-   - MySQL host
-   - database name
-   - username
-   - password
-6. Buka **phpMyAdmin** dari panel InfinityFree.
-7. Pilih database yang baru dibuat.
+1. Login ke InfinityFree.
+2. Buat hosting dan buka **File Manager**.
+3. Upload semua isi folder project ke `htdocs`.
+4. Buka **MySQL Databases** dan buat database baru.
+5. Catat host, username, password, dan nama database.
+6. Buka phpMyAdmin dari panel InfinityFree.
+7. Pilih database kamu.
 8. Import file `database/studyflow.sql`.
-9. Edit file `config/database.php`:
+9. Edit `config/database.php`:
 
 ```php
 return [
     'host' => 'sqlXXX.infinityfree.com',
     'username' => 'if0_XXXXXXX',
     'password' => 'password_database_kamu',
-    'database' => 'if0_XXXXXXX_studyflow',
+    'database' => 'if0_XXXXXXX_todo_app',
     'port' => 3306,
     'charset' => 'utf8mb4',
 ];
@@ -77,28 +77,46 @@ return [
 
 10. Buka domain kamu. `index.php` otomatis mengarahkan ke login atau dashboard.
 
-## Cara Login Pertama Kali
+## Akun Demo
 
-Tidak ada akun default demi keamanan.
+Jika memakai file SQL bawaan:
 
-1. Buka halaman login.
-2. Klik **Daftar di sini**.
-3. Buat akun dengan nama, email, dan password.
-4. Setelah register berhasil, login dengan email dan password tersebut.
+- Email: `demo@studyflow.test`
+- Password: `password`
 
-Saat akun baru dibuat, daftar mata kuliah default otomatis dibuat untuk akun itu. User lain akan mendapat data sendiri dan tidak bisa melihat data akun lain.
+Kamu juga bisa langsung membuat akun baru lewat menu register. Akun baru otomatis mendapat daftar mata kuliah default.
 
-## Install Lokal
+## Fitur
 
-1. Copy folder ke `C:\laragon\www\studyflow-php` atau `C:\xampp\htdocs\studyflow-php`.
-2. Import `database.sql` lewat phpMyAdmin.
-3. Edit `config/database.php` jika nama database atau password berbeda.
-4. Buka `http://localhost/studyflow-php`.
+- Register, login, logout, session protection.
+- Ganti password.
+- Edit nama profil.
+- Upload dan hapus foto profil.
+- Dark mode tersimpan ke akun.
+- CRUD mata kuliah dengan warna dan icon.
+- CRUD tugas dengan deadline, prioritas, status, filter, dan pencarian.
+- Kalender interaktif dan agenda per tanggal.
+- Dashboard statistik, progress produktivitas, deadline dekat, dan agenda hari ini.
+- Toast, modal, loading-friendly fetch, empty state.
 
-## Catatan Hosting
+## Troubleshooting
 
-- Tidak membutuhkan Node.js.
-- Tidak membutuhkan Composer.
-- Tidak membutuhkan command terminal di hosting.
-- Upload file, import database, edit config, lalu jalan.
-- Jika muncul pesan koneksi database gagal, cek kembali `config/database.php` dan pastikan tabel sudah diimport.
+**Blank page atau error 500**
+- Pastikan `config/database.php` benar.
+- Pastikan `database/studyflow.sql` sudah diimport.
+- Cek file log sederhana di `uploads/php-error.log`.
+
+**Login demo gagal**
+- Pastikan import SQL selesai tanpa error.
+- Jika tabel sudah ada sebelum import, hapus user demo lama atau buat akun baru dari register.
+
+**Upload foto gagal**
+- Pastikan folder `uploads/profile` ikut terupload.
+- Ukuran file maksimal 2MB, format JPG/PNG.
+
+**Asset CSS/JS tidak muncul**
+- Pastikan semua folder `assets/`, `auth/`, `backend/`, `config/`, `includes/`, `database/`, dan `uploads/` berada langsung di dalam `htdocs`.
+
+## Catatan
+
+Project ini tidak membutuhkan Node.js, Composer, `npm start`, `artisan serve`, atau command terminal di hosting. Cukup upload file, import database, edit config, lalu jalan.

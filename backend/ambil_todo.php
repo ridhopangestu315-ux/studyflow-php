@@ -5,14 +5,15 @@ require __DIR__ . '/koneksi.php';
 
 $stmt = mysqli_prepare(
     $koneksi,
-    "SELECT id, nama_tugas, mata_kuliah, deadline, prioritas, sudah_selesai, dibuat_pada
-     FROM todos
+    "SELECT id, title AS nama_tugas, subject_name AS mata_kuliah, deadline, priority AS prioritas,
+            is_done AS sudah_selesai, created_at AS dibuat_pada
+     FROM tasks
      WHERE user_id = ?
-     ORDER BY sudah_selesai ASC, deadline ASC, dibuat_pada DESC"
+     ORDER BY is_done ASC, deadline ASC, created_at DESC"
 );
 
 if (!$stmt) {
-    json_response(['success' => false, 'message' => 'Gagal mengambil tugas. Periksa struktur tabel todos.'], 500);
+    json_response(['success' => false, 'message' => 'Gagal mengambil tugas. Periksa struktur tabel tasks.'], 500);
 }
 
 mysqli_stmt_bind_param($stmt, 'i', $user_id);

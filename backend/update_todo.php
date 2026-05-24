@@ -11,7 +11,7 @@ if ($todo_id <= 0) {
     json_response(['success' => false, 'message' => 'ID tugas tidak valid'], 422);
 }
 
-$cek = mysqli_prepare($koneksi, 'SELECT id FROM todos WHERE id = ? AND user_id = ?');
+$cek = mysqli_prepare($koneksi, 'SELECT id FROM tasks WHERE id = ? AND user_id = ?');
 mysqli_stmt_bind_param($cek, 'ii', $todo_id, $user_id);
 mysqli_stmt_execute($cek);
 mysqli_stmt_store_result($cek);
@@ -28,7 +28,7 @@ if (array_key_exists('sudah_selesai', $data) && count($data) <= 2) {
         json_response(['success' => false, 'message' => 'Status tugas tidak valid'], 422);
     }
 
-    $stmt = mysqli_prepare($koneksi, 'UPDATE todos SET sudah_selesai = ? WHERE id = ? AND user_id = ?');
+    $stmt = mysqli_prepare($koneksi, 'UPDATE tasks SET is_done = ? WHERE id = ? AND user_id = ?');
     mysqli_stmt_bind_param($stmt, 'iii', $sudah_selesai, $todo_id, $user_id);
 } else {
     $nama_tugas = clean_text((string) ($data['nama_tugas'] ?? ''), 180);
@@ -50,11 +50,23 @@ if (array_key_exists('sudah_selesai', $data) && count($data) <= 2) {
         $prioritas = 'sedang';
     }
 
+    $subject_id = null;
+    $subjectStmt = mysqli_prepare($koneksi, 'SELECT id FROM subjects WHERE user_id = ? AND name = ? LIMIT 1');
+    if ($subjectStmt) {
+        mysqli_stmt_bind_param($subjectStmt, 'is', $user_id, $mata_kuliah);
+        mysqli_stmt_execute($subjectStmt);
+        mysqli_stmt_bind_result($subjectStmt, $foundSubjectId);
+        if (mysqli_stmt_fetch($subjectStmt)) {
+            $subject_id = (int) $foundSubjectId;
+        }
+        mysqli_stmt_close($subjectStmt);
+    }
+
     $stmt = mysqli_prepare(
         $koneksi,
-        'UPDATE todos SET nama_tugas = ?, mata_kuliah = ?, deadline = ?, prioritas = ? WHERE id = ? AND user_id = ?'
+        'UPDATE tasks SET title = ?, subject_id = ?, subject_name = ?, deadline = ?, priority = ? WHERE id = ? AND user_id = ?'
     );
-    mysqli_stmt_bind_param($stmt, 'ssssii', $nama_tugas, $mata_kuliah, $deadline, $prioritas, $todo_id, $user_id);
+    mysqli_stmt_bind_param($stmt, 'sisssii', $nama_tugas, $subject_id, $mata_kuliah, $deadline, $prioritas, $todo_id, $user_id);
 }
 
 if (!$stmt || !mysqli_stmt_execute($stmt)) {
@@ -64,7 +76,7 @@ mysqli_stmt_close($stmt);
 
 $ambil = mysqli_prepare(
     $koneksi,
-    'SELECT id, nama_tugas, mata_kuliah, deadline, prioritas, sudah_selesai, dibuat_pada FROM todos WHERE id = ? AND user_id = ?'
+    'SELECT id, title AS nama_tugas, subject_name AS mata_kuliah, deadline, priority AS prioritas, is_done AS sudah_selesai, created_at AS dibuat_pada FROM tasks WHERE id = ? AND user_id = ?'
 );
 mysqli_stmt_bind_param($ambil, 'ii', $todo_id, $user_id);
 mysqli_stmt_execute($ambil);

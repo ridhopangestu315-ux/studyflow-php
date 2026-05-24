@@ -16,7 +16,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     json_response(['success' => false, 'message' => 'Format email tidak valid'], 422);
 }
 
-$stmt = mysqli_prepare($koneksi, 'SELECT id, email, password, nama_lengkap FROM users WHERE email = ? LIMIT 1');
+$stmt = mysqli_prepare($koneksi, 'SELECT id, email, password, name, avatar, theme FROM users WHERE email = ? LIMIT 1');
 if (!$stmt) {
     json_response(['success' => false, 'message' => 'Gagal memproses login. Pastikan database sudah diimport.'], 500);
 }
@@ -34,10 +34,14 @@ if (!$user || !password_verify($password, $user['password'])) {
 session_regenerate_id(true);
 $_SESSION['user_id'] = (int) $user['id'];
 $_SESSION['email'] = $user['email'];
-$_SESSION['nama'] = $user['nama_lengkap'];
+$_SESSION['nama'] = $user['name'];
+$_SESSION['avatar'] = $user['avatar'] ?? null;
+$_SESSION['theme'] = $user['theme'] ?? 'light';
 
 json_response([
     'success' => true,
     'message' => 'Login berhasil',
-    'nama' => $user['nama_lengkap'],
+    'nama' => $user['name'],
+    'avatar' => $user['avatar'],
+    'theme' => $user['theme'],
 ]);

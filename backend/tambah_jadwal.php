@@ -27,7 +27,7 @@ if (!in_array($kategori, $kategoriValid, true)) {
     $kategori = 'kuliah';
 }
 
-$stmt = mysqli_prepare($koneksi, 'INSERT INTO jadwal (user_id, judul, tanggal, jam, kategori) VALUES (?, ?, ?, ?, ?)');
+$stmt = mysqli_prepare($koneksi, 'INSERT INTO schedules (user_id, title, schedule_date, schedule_time, category) VALUES (?, ?, ?, ?, ?)');
 if (!$stmt) {
     json_response(['success' => false, 'message' => 'Gagal menyiapkan jadwal'], 500);
 }

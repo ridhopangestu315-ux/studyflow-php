@@ -20,6 +20,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $nama_user = e((string) ($_SESSION['nama'] ?? 'User'));
+$avatar_user = e((string) ($_SESSION['avatar'] ?? ''));
+$theme_user = e((string) ($_SESSION['theme'] ?? 'light'));
 
 // Tanggal dalam Bahasa Indonesia
 $hariID  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -44,7 +46,7 @@ $jamSekarang = $now->format('H.i');
   <link rel="stylesheet" href="assets/css/home.css">
   <link rel="icon" type="image/png" href="assets/images/icon1.PNG">
 </head>
-<body data-nama="<?= $nama_user ?>">
+<body data-nama="<?= $nama_user ?>" data-avatar="<?= $avatar_user ?>" data-theme="<?= $theme_user ?>">
   <div class="latar-ambient" aria-hidden="true"></div>
   <div class="wadah-aplikasi">
 
@@ -471,6 +473,21 @@ $jamSekarang = $now->format('H.i');
                   autocomplete="off" maxlength="80">
                 <small id="pesanErrorMataKuliahBaru" class="pesan-error"></small>
               </div>
+              <div class="grup-form">
+                <label for="inputWarnaMataKuliah">Warna</label>
+                <input type="color" id="inputWarnaMataKuliah" value="#4f46e5">
+              </div>
+              <div class="grup-form">
+                <label for="pilihanIconMataKuliah">Icon</label>
+                <select id="pilihanIconMataKuliah">
+                  <option value="book">Book</option>
+                  <option value="code">Code</option>
+                  <option value="monitor">Monitor</option>
+                  <option value="network">Network</option>
+                  <option value="chart">Chart</option>
+                  <option value="sigma">Sigma</option>
+                </select>
+              </div>
               <button id="tombolTambahMataKuliah" class="tombol-utama" type="button">Tambah</button>
             </div>
             <div id="daftarMataKuliahPengaturan" class="daftar-mata-kuliah-pengaturan"></div>
@@ -596,7 +613,7 @@ $jamSekarang = $now->format('H.i');
       async function doLogout() {
         if (!confirm('Apakah kamu yakin ingin logout?')) return;
         try {
-          const res  = await fetch('backend/logout.php', { method: 'POST', credentials: 'same-origin' });
+          const res  = await fetch('auth/logout.php', { method: 'POST', credentials: 'same-origin' });
           const data = await res.json();
           if (data.success) window.location.href = 'login.html';
           else alert(data.message || 'Gagal logout.');

@@ -37,7 +37,7 @@ if (mysqli_stmt_num_rows($cek) > 0) {
 mysqli_stmt_close($cek);
 
 $hash = password_hash($password, PASSWORD_DEFAULT);
-$insert = mysqli_prepare($koneksi, 'INSERT INTO users (email, password, nama_lengkap) VALUES (?, ?, ?)');
+$insert = mysqli_prepare($koneksi, 'INSERT INTO users (email, password, name) VALUES (?, ?, ?)');
 if (!$insert) {
     json_response(['success' => false, 'message' => 'Gagal menyiapkan registrasi. Periksa struktur database.'], 500);
 }
@@ -52,22 +52,22 @@ $userId = mysqli_insert_id($koneksi);
 mysqli_stmt_close($insert);
 
 $defaultCourses = [
-    'Analisis dan Perancangan Sistem',
-    'Grafika Komputer',
-    'Interaksi Manusia dan Komputer',
-    'Jaringan Komputer',
-    'Pendidikan Agama Islam',
-    'Pemrograman Web',
-    'Praktikum Jaringan Komputer',
-    'Praktikum PBO',
-    'Sistem Rekayasa Berkelanjutan',
-    'Statistika Untuk Komputasi',
+    ['Analisis dan Perancangan Sistem', '#4f46e5', 'chart'],
+    ['Grafika Komputer', '#7c3aed', 'monitor'],
+    ['Interaksi Manusia dan Komputer', '#2563eb', 'cursor'],
+    ['Jaringan Komputer', '#0891b2', 'network'],
+    ['Pendidikan Agama Islam', '#16a34a', 'book'],
+    ['Pemrograman Web', '#e11d48', 'code'],
+    ['Praktikum Jaringan Komputer', '#0f766e', 'wifi'],
+    ['Praktikum PBO', '#d97706', 'box'],
+    ['Sistem Rekayasa Berkelanjutan', '#65a30d', 'leaf'],
+    ['Statistika Untuk Komputasi', '#9333ea', 'sigma'],
 ];
 
-$courseStmt = mysqli_prepare($koneksi, 'INSERT IGNORE INTO mata_kuliah (user_id, nama) VALUES (?, ?)');
+$courseStmt = mysqli_prepare($koneksi, 'INSERT IGNORE INTO subjects (user_id, name, color, icon) VALUES (?, ?, ?, ?)');
 if ($courseStmt) {
-    foreach ($defaultCourses as $courseName) {
-        mysqli_stmt_bind_param($courseStmt, 'is', $userId, $courseName);
+    foreach ($defaultCourses as $course) {
+        mysqli_stmt_bind_param($courseStmt, 'isss', $userId, $course[0], $course[1], $course[2]);
         mysqli_stmt_execute($courseStmt);
     }
     mysqli_stmt_close($courseStmt);

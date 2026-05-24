@@ -1,4 +1,4 @@
 Options -Indexes
-<FilesMatch "\.(php|phtml|log)$">
+<FilesMatch "\.(sql)$">
   Require all denied
 </FilesMatch>

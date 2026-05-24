@@ -11,7 +11,7 @@ if ($jadwal_id <= 0) {
     json_response(['success' => false, 'message' => 'ID tidak valid'], 422);
 }
 
-$stmt = mysqli_prepare($koneksi, 'DELETE FROM jadwal WHERE id = ? AND user_id = ?');
+$stmt = mysqli_prepare($koneksi, 'DELETE FROM schedules WHERE id = ? AND user_id = ?');
 mysqli_stmt_bind_param($stmt, 'ii', $jadwal_id, $user_id);
 
 if (!mysqli_stmt_execute($stmt)) {

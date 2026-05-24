@@ -155,6 +155,8 @@ const elemenHalaman = {
   tombolResetData: document.getElementById("tombolResetData"),
 
   inputNamaMataKuliah: document.getElementById("inputNamaMataKuliah"),
+  inputWarnaMataKuliah: document.getElementById("inputWarnaMataKuliah"),
+  pilihanIconMataKuliah: document.getElementById("pilihanIconMataKuliah"),
   tombolTambahMataKuliah: document.getElementById("tombolTambahMataKuliah"),
   pesanErrorMataKuliahBaru: document.getElementById("pesanErrorMataKuliahBaru"),
   daftarMataKuliahPengaturan: document.getElementById("daftarMataKuliahPengaturan"),
@@ -207,6 +209,19 @@ function ambilDataDariLocalStorage(namaData, nilaiDefault) {
 
 function simpanDataKeLocalStorage(namaData, isiData) {
   localStorage.setItem(namaData, JSON.stringify(isiData));
+}
+
+async function simpanProfilKeDatabase(payload) {
+  const response = await fetch('backend/update_profile.php', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json();
+  if (data.redirect) { window.location.href = 'login.html'; return null; }
+  if (!data.success) throw new Error(data.message);
+  return data.profile;
 }
 
 /*
@@ -539,13 +554,13 @@ async function ambilMataKuliahDariDatabase() {
   }
 }
 
-async function tambahMataKuliahKeDatabase(nama) {
+async function tambahMataKuliahKeDatabase(nama, color = "#4f46e5", icon = "book") {
   try {
     const resp = await fetch('backend/tambah_mata_kuliah.php', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nama })
+      body: JSON.stringify({ nama, color, icon })
     });
     const data = await resp.json();
     if (data.redirect) { window.location.href = 'login.html'; return null; }
@@ -554,13 +569,48 @@ async function tambahMataKuliahKeDatabase(nama) {
       // Hindari duplikat di array lokal
       const sudahAda = dataAplikasi.daftarMataKuliah.find(mk => mk.id === data.mata_kuliah.id.toString());
       if (!sudahAda) {
-        dataAplikasi.daftarMataKuliah.push({ id: data.mata_kuliah.id.toString(), nama: data.mata_kuliah.nama });
+        dataAplikasi.daftarMataKuliah.push({
+          id: data.mata_kuliah.id.toString(),
+          nama: data.mata_kuliah.nama,
+          color: data.mata_kuliah.color || color,
+          icon: data.mata_kuliah.icon || icon
+        });
       }
       return data.mata_kuliah;
     }
     throw new Error(data.message);
   } catch (err) {
     console.error('[DEBUG] Error tambah mata kuliah:', err);
+    throw err;
+  }
+}
+
+async function updateMataKuliahKeDatabase(id, nama, color = "#4f46e5", icon = "book") {
+  try {
+    const resp = await fetch('backend/update_mata_kuliah.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: parseInt(id), nama, color, icon })
+    });
+    const data = await resp.json();
+    if (data.redirect) { window.location.href = 'login.html'; return null; }
+    if (data.success) {
+      dataAplikasi.daftarMataKuliah = (dataAplikasi.daftarMataKuliah || []).map(mk =>
+        mk.id.toString() === id.toString()
+          ? {
+              id: data.mata_kuliah.id.toString(),
+              nama: data.mata_kuliah.nama,
+              color: data.mata_kuliah.color,
+              icon: data.mata_kuliah.icon
+            }
+          : mk
+      );
+      return data.mata_kuliah;
+    }
+    throw new Error(data.message);
+  } catch (err) {
+    console.error('Error update mata kuliah:', err);
     throw err;
   }
 }
@@ -768,11 +818,10 @@ function render() {
 }
 
 function renderTampilan() {
-  // Ambil nama dari: 1) data-nama di body (dari PHP session), 2) localStorage (jika user edit), 3) default "User"
+  // Ambil nama dari session PHP; localStorage lama hanya fallback migrasi.
   const namaDariPHP       = document.body.dataset.nama || '';
   const namaDariStorage   = ambilDataDariLocalStorage(namaPenyimpananLocalStorage.namaPengguna, '');
-  // Prioritaskan localStorage jika user sudah pernah ubah nama, kalau tidak pakai dari PHP session
-  const namaPengguna      = namaDariStorage || namaDariPHP || 'User';
+  const namaPengguna      = namaDariPHP || namaDariStorage || 'User';
   const inisialPengguna   = namaPengguna.charAt(0).toUpperCase();
 
   // Hanya update teksSapaan jika belum diisi PHP (cegah overwrite saat re-render)
@@ -1073,6 +1122,10 @@ elemenHalaman.toggleModeGelap.addEventListener("change", function () {
     elemenHalaman.body.classList.remove("mode-gelap");
   }
   simpanDataKeLocalStorage(namaPenyimpananLocalStorage.modeGelap, this.checked);
+  simpanProfilKeDatabase({
+    name: elemenHalaman.inputNamaPengguna ? elemenHalaman.inputNamaPengguna.value.trim() || document.body.dataset.nama || "User" : document.body.dataset.nama || "User",
+    theme: this.checked ? "dark" : "light"
+  }).catch(() => tampilkanToast("Preferensi dark mode belum tersimpan ke akun"));
 });
 
 // Simpan nama user
@@ -1082,9 +1135,17 @@ elemenHalaman.tombolSimpanNama.addEventListener("click", function () {
     tampilkanToast("Nama tidak boleh kosong");
     return;
   }
-  simpanDataKeLocalStorage(namaPenyimpananLocalStorage.namaPengguna, namaBaru);
-  tampilkanToast("Nama berhasil disimpan");
-  renderTampilan();
+  simpanProfilKeDatabase({
+    name: namaBaru,
+    theme: elemenHalaman.toggleModeGelap && elemenHalaman.toggleModeGelap.checked ? "dark" : "light"
+  }).then(function () {
+    document.body.dataset.nama = namaBaru;
+    localStorage.removeItem(namaPenyimpananLocalStorage.namaPengguna);
+    tampilkanToast("Nama berhasil disimpan");
+    renderTampilan();
+  }).catch(function (error) {
+    tampilkanToast("Gagal menyimpan nama: " + error.message);
+  });
 });
 
 /*
@@ -1543,10 +1604,19 @@ function renderMataKuliahPengaturan() {
   }
 
   elemenHalaman.daftarMataKuliahPengaturan.innerHTML = list.map(function (mk) {
+    const warna = mk.color || "#4f46e5";
+    const icon = mk.icon || "book";
     return `
-      <div class="item-mata-kuliah" style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; margin-bottom:6px; background:var(--surface-2,#f5f5f7); border-radius:8px;">
-        <span>${amankanTeksUntukHtml(mk.nama)}</span>
-        <button class="tombol-hapus-mk tombol-kecil tombol-hapus" type="button" data-mk-id="${mk.id}" style="font-size:12px; padding:4px 10px;">Hapus</button>
+      <div class="item-mata-kuliah" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 12px; margin-bottom:6px; background:var(--surface-2,#f5f5f7); border-radius:8px;">
+        <span style="display:flex; align-items:center; gap:8px; min-width:0;">
+          <i style="width:12px;height:12px;border-radius:999px;background:${amankanTeksUntukHtml(warna)};display:inline-block;flex-shrink:0;"></i>
+          <strong style="font-size:12px;color:var(--text-soft);text-transform:uppercase;">${amankanTeksUntukHtml(icon)}</strong>
+          <span>${amankanTeksUntukHtml(mk.nama)}</span>
+        </span>
+        <span style="display:flex; gap:6px;">
+          <button class="tombol-edit-mk tombol-kecil" type="button" data-mk-id="${mk.id}" data-mk-nama="${amankanTeksUntukHtml(mk.nama)}" data-mk-color="${amankanTeksUntukHtml(warna)}" data-mk-icon="${amankanTeksUntukHtml(icon)}" style="font-size:12px; padding:4px 10px;">Edit</button>
+          <button class="tombol-hapus-mk tombol-kecil tombol-hapus" type="button" data-mk-id="${mk.id}" style="font-size:12px; padding:4px 10px;">Hapus</button>
+        </span>
       </div>
     `;
   }).join("");
@@ -1557,6 +1627,8 @@ if (elemenHalaman.tombolTambahMataKuliah) {
   elemenHalaman.tombolTambahMataKuliah.addEventListener("click", async function () {
     const input = elemenHalaman.inputNamaMataKuliah;
     const namaBaru = input ? input.value.trim() : "";
+    const warna = elemenHalaman.inputWarnaMataKuliah ? elemenHalaman.inputWarnaMataKuliah.value : "#4f46e5";
+    const icon = elemenHalaman.pilihanIconMataKuliah ? elemenHalaman.pilihanIconMataKuliah.value : "book";
 
     if (elemenHalaman.pesanErrorMataKuliahBaru) elemenHalaman.pesanErrorMataKuliahBaru.textContent = "";
 
@@ -1574,7 +1646,7 @@ if (elemenHalaman.tombolTambahMataKuliah) {
 
     try {
       elemenHalaman.tombolTambahMataKuliah.disabled = true;
-      await tambahMataKuliahKeDatabase(namaBaru);
+      await tambahMataKuliahKeDatabase(namaBaru, warna, icon);
       if (input) input.value = "";
       renderMataKuliahPengaturan();
       perbaruhiTampilan();
@@ -1589,6 +1661,27 @@ if (elemenHalaman.tombolTambahMataKuliah) {
 
 // [DIPERBAIKI] Hapus mata kuliah → database via data-mk-id (bukan data-index)
 document.addEventListener("click", async function (e) {
+  if (e.target.matches(".tombol-edit-mk")) {
+    const mkId = e.target.dataset.mkId;
+    const namaLama = e.target.dataset.mkNama || "";
+    const warnaLama = e.target.dataset.mkColor || "#4f46e5";
+    const iconLama = e.target.dataset.mkIcon || "book";
+    const namaBaru = prompt("Edit nama mata kuliah", namaLama);
+    if (namaBaru === null) return;
+    const warnaBaru = prompt("Edit warna hex", warnaLama);
+    if (warnaBaru === null) return;
+    const iconBaru = prompt("Edit icon", iconLama);
+    if (iconBaru === null) return;
+    try {
+      await updateMataKuliahKeDatabase(mkId, namaBaru.trim(), warnaBaru.trim(), iconBaru.trim());
+      renderMataKuliahPengaturan();
+      perbaruhiTampilan();
+      tampilkanToast("Mata kuliah berhasil diperbarui");
+    } catch (err) {
+      tampilkanToast("Gagal edit mata kuliah: " + err.message);
+    }
+  }
+
   if (e.target.matches(".tombol-hapus-mk")) {
     const mkId = e.target.dataset.mkId;
     if (!mkId) return;
@@ -1635,7 +1728,7 @@ if (elemenHalaman.tombolUploadFoto) {
 }
 
 if (elemenHalaman.inputFotoProfil) {
-  elemenHalaman.inputFotoProfil.addEventListener("change", function () {
+  elemenHalaman.inputFotoProfil.addEventListener("change", async function () {
     const file = this.files[0];
     if (!file) return;
 
@@ -1650,22 +1743,45 @@ if (elemenHalaman.inputFotoProfil) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = function (ev) {
-      const base64 = ev.target.result;
-      simpanDataKeLocalStorage(namaPenyimpananLocalStorage.fotoProfil, base64);
-      terapkanFotoProfil(base64);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      const response = await fetch("backend/upload_profile_photo.php", {
+        method: "POST",
+        credentials: "same-origin",
+        body: formData
+      });
+      const data = await response.json();
+      if (data.redirect) { window.location.href = "login.html"; return; }
+      if (!data.success) throw new Error(data.message);
+      localStorage.removeItem(namaPenyimpananLocalStorage.fotoProfil);
+      document.body.dataset.avatar = data.avatar;
+      terapkanFotoProfil(data.avatar);
       tampilkanToast("Foto profil berhasil diubah");
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      if (elemenHalaman.pesanErrorFotoProfil) elemenHalaman.pesanErrorFotoProfil.textContent = error.message;
+      tampilkanToast("Gagal upload foto: " + error.message);
+    }
   });
 }
 
 if (elemenHalaman.tombolHapusFoto) {
-  elemenHalaman.tombolHapusFoto.addEventListener("click", function () {
-    localStorage.removeItem(namaPenyimpananLocalStorage.fotoProfil);
-    terapkanFotoProfil(null);
-    tampilkanToast("Foto profil dihapus");
+  elemenHalaman.tombolHapusFoto.addEventListener("click", async function () {
+    try {
+      const response = await fetch("backend/hapus_profile_photo.php", {
+        method: "POST",
+        credentials: "same-origin"
+      });
+      const data = await response.json();
+      if (data.redirect) { window.location.href = "login.html"; return; }
+      if (!data.success) throw new Error(data.message);
+      localStorage.removeItem(namaPenyimpananLocalStorage.fotoProfil);
+      document.body.dataset.avatar = "";
+      terapkanFotoProfil(null);
+      tampilkanToast("Foto profil dihapus");
+    } catch (error) {
+      tampilkanToast("Gagal hapus foto: " + error.message);
+    }
   });
 }
 
@@ -1823,7 +1939,7 @@ if (document.getElementById('tombolGantiPassword')) {
     if (!ok) return;
 
     try {
-      const res = await fetch('backend/change_password.php', {
+      const res = await fetch('auth/change_password.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
@@ -1897,8 +2013,14 @@ INISIALISASI SAAT HALAMAN DIMUAT
 */
 window.addEventListener("load", async function () {
   // Terapkan foto profil tersimpan
-  const fotoTersimpan = ambilDataDariLocalStorage(namaPenyimpananLocalStorage.fotoProfil, null);
+  const fotoDariAkun = document.body.dataset.avatar || null;
+  const fotoTersimpan = fotoDariAkun || ambilDataDariLocalStorage(namaPenyimpananLocalStorage.fotoProfil, null);
   if (fotoTersimpan) terapkanFotoProfil(fotoTersimpan);
+
+  if (document.body.dataset.theme === "dark") {
+    dataAplikasi.modeGelapAktif = true;
+    simpanDataKeLocalStorage(namaPenyimpananLocalStorage.modeGelap, true);
+  }
 
   // [DIPERBAIKI] Ambil SEMUA data dari database secara paralel
   const [berhasilTugas, berhasilJadwal, berhasilMK] = await Promise.all([

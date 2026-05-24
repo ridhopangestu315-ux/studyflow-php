@@ -1,0 +1,15 @@
+[24-May-2026 20:39:24 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'todo_app.schedules' doesn't exist in C:\laragon\www\studyflow-php\backend\ambil_jadwal.php:8
+Stack trace:
+#0 C:\laragon\www\studyflow-php\backend\ambil_jadwal.php(8): mysqli_prepare(Object(mysqli), 'SELECT id, titl...')
+#1 {main}
+  thrown in C:\laragon\www\studyflow-php\backend\ambil_jadwal.php on line 8
+[24-May-2026 20:39:24 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'todo_app.tasks' doesn't exist in C:\laragon\www\studyflow-php\backend\ambil_todo.php:8
+Stack trace:
+#0 C:\laragon\www\studyflow-php\backend\ambil_todo.php(8): mysqli_prepare(Object(mysqli), 'SELECT id, titl...')
+#1 {main}
+  thrown in C:\laragon\www\studyflow-php\backend\ambil_todo.php on line 8
+[24-May-2026 20:39:24 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'todo_app.subjects' doesn't exist in C:\laragon\www\studyflow-php\backend\ambil_mata_kuliah.php:6
+Stack trace:
+#0 C:\laragon\www\studyflow-php\backend\ambil_mata_kuliah.php(6): mysqli_prepare(Object(mysqli), 'SELECT id, name...')
+#1 {main}
+  thrown in C:\laragon\www\studyflow-php\backend\ambil_mata_kuliah.php on line 6

@@ -3,7 +3,7 @@ require_once __DIR__ . '/../includes/app.php';
 $user_id = require_login_json();
 require __DIR__ . '/koneksi.php';
 
-$stmt = mysqli_prepare($koneksi, 'SELECT id, nama FROM mata_kuliah WHERE user_id = ? ORDER BY nama ASC');
+$stmt = mysqli_prepare($koneksi, 'SELECT id, name AS nama, color, icon FROM subjects WHERE user_id = ? ORDER BY name ASC');
 if (!$stmt) {
     json_response(['success' => false, 'message' => 'Gagal mengambil mata kuliah'], 500);
 }

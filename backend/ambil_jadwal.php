@@ -5,10 +5,11 @@ require __DIR__ . '/koneksi.php';
 
 $stmt = mysqli_prepare(
     $koneksi,
-    "SELECT id, judul, DATE_FORMAT(tanggal, '%Y-%m-%d') AS tanggal, TIME_FORMAT(jam, '%H:%i') AS jam, kategori
-     FROM jadwal
+    "SELECT id, title AS judul, DATE_FORMAT(schedule_date, '%Y-%m-%d') AS tanggal,
+            TIME_FORMAT(schedule_time, '%H:%i') AS jam, category AS kategori
+     FROM schedules
      WHERE user_id = ?
-     ORDER BY tanggal ASC, jam ASC"
+     ORDER BY schedule_date ASC, schedule_time ASC"
 );
 
 if (!$stmt) {

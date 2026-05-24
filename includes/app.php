@@ -7,12 +7,24 @@ if (!defined('STUDYFLOW_APP')) {
 
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
+ini_set('error_log', __DIR__ . '/../uploads/php-error.log');
 date_default_timezone_set('Asia/Jakarta');
 
 function start_secure_session(): void
 {
     if (session_status() === PHP_SESSION_ACTIVE) {
         return;
+    }
+
+    $sessionPath = session_save_path();
+    if ($sessionPath === '' || !is_dir($sessionPath) || !is_writable($sessionPath)) {
+        $fallbackPath = __DIR__ . '/../uploads/sessions';
+        if (!is_dir($fallbackPath)) {
+            @mkdir($fallbackPath, 0755, true);
+        }
+        if (is_dir($fallbackPath) && is_writable($fallbackPath)) {
+            session_save_path($fallbackPath);
+        }
     }
 
     session_set_cookie_params([
@@ -24,7 +36,18 @@ function start_secure_session(): void
         'samesite' => 'Lax',
     ]);
 
-    session_start();
+    if (!@session_start()) {
+        json_response([
+            'success' => false,
+            'message' => 'Session gagal dimulai. Pastikan hosting mengizinkan PHP session.',
+        ], 500);
+    }
+}
+
+function current_user_id(): ?int
+{
+    start_secure_session();
+    return empty($_SESSION['user_id']) ? null : (int) $_SESSION['user_id'];
 }
 
 function json_response(array $payload, int $statusCode = 200): void

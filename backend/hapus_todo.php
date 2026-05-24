@@ -11,7 +11,7 @@ if ($todo_id <= 0) {
     json_response(['success' => false, 'message' => 'ID tugas tidak valid'], 422);
 }
 
-$stmt = mysqli_prepare($koneksi, 'DELETE FROM todos WHERE id = ? AND user_id = ?');
+$stmt = mysqli_prepare($koneksi, 'DELETE FROM tasks WHERE id = ? AND user_id = ?');
 mysqli_stmt_bind_param($stmt, 'ii', $todo_id, $user_id);
 
 if (!mysqli_stmt_execute($stmt)) {
